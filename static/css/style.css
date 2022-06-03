@@ -1,0 +1,20 @@
+body {
+    background-color: black;
+    color: gainsboro;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+span.footnote{
+    text-align: center;
+    font-size: x-small;
+}
+
+#divTitle {
+    text-align: center;
+    width: 500px;
+    margin:auto;
+    color: goldenrod;
+    font-size:x-large;
+    font-weight: 700;
+
+}
