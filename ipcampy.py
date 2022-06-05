@@ -1,11 +1,11 @@
 # Big thanks to the below link which had all the core code needed
 # https://stackoverflow.com/questions/49978705/access-ip-camera-in-python-opencv#49979186
 
-import numpy as np
 import config
 from flask import Flask, request, send_file, render_template, abort, redirect, make_response
 from datetime import datetime, timedelta
 import sys
+import time
 
 from io import BytesIO
 
@@ -38,6 +38,8 @@ def captureImage():
         abort(500)  
         return
 
+    tstart = time.time()
+
     #camurl = "rtsp://" + config.myconfig["cam_login"] + ":" + config.myconfig["cam_password"] + "@" + config.myconfig["cam_ip"] + ":" + config.myconfig["cam_port"]+ config.myconfig["cam_suffix"]
     camurl = "rtsp://" + config.myconfig["cam_ip"] + ":" + config.myconfig["cam_port"]+ config.myconfig["cam_suffix"]
     io_buf = BytesIO()
@@ -61,6 +63,9 @@ def captureImage():
     
     #put back at start in case
     io_buf.seek(0)
+
+    tend=time.time()
+    #print("DBG: acquisition in ", tend - tstart)
 
     #return the in memory image
     return send_file(io_buf, mimetype='image/jpeg')
@@ -102,7 +107,7 @@ If you don't provide the *.pem files it will start as an HTTP app. You need to p
     """)
     try:
         #start web interface
-        app.debug = True
+        app.debug = not config.myconfig["isProd"]
         
         #run as HTTPS?
         if len(sys.argv) == 3:
