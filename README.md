@@ -20,6 +20,7 @@ Documentation details are here: http://electrogeek.tokyo/ipcampy.nocv.html
 1. run the ./setup.sh or do the below 2 lines
 1. sudo adduser webuser  #make the user
 1. sudo passwd -l webuser #disable the login of the user but allows to su to
+1. edit the /ssl/*.pem permissions so the files belong to group webuser and that group has readonly access (otherwise can't run as ssh)
 1. now run the ./start-service.sh on startup, usually by putting it in /etc/rc.local
 1. reboot and test...
 
