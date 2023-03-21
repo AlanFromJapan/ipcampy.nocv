@@ -24,4 +24,18 @@ Documentation details are here: http://electrogeek.tokyo/ipcampy.nocv.html
 1. now run the ./start-service.sh on startup, usually by putting it in /etc/rc.local
 1. reboot and test...
 
+## Troubleshooting
 
+So I got some errors, and I'm trying to get around it. Workarounds only here, if I found the solution I fixed it (duh).
+
+### Service stops answering
+
+After a few days it happened to randomly stop answering. Didn't get why, it was not a memory or CPU problem, logs were ok ... just Flask not answering anymore. Bug of Flask (it has been serving my other website for 700+ days an counting so I doubt), maybe some handling not freed or port? Something due to the av lib?
+
+WORKAROUND: just cron a restart daily, that's it.
+
+### The stop start restart start complaining about tty and askpass?
+
+Dunno why after 3 days this error appeared ! You need to allow your user to sudo and run the stop/start/restart so edit the visudo file and add:
+
+username ALL=NOPASSWD:/home/username/Git/ipcampy.nocv/restart-service.sh, /home/username/Git/ipcampy.nocv/start-service.sh, /home/username/Git/ipcampy.nocv/stop-service.sh
