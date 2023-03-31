@@ -18,3 +18,13 @@ span.footnote{
     font-weight: 700;
 
 }
+
+div.showcamera {
+    border:solid 1px goldenrod;
+}
+
+div.showcamera p.camname {
+    font-size: larger;
+    color:gold;
+    font-weight: bold;
+}

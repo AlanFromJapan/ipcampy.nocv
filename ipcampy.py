@@ -27,54 +27,70 @@ def homepage():
     #not logged in? go away
     if None == request.cookies.get('username'):
         return redirect("login")
-    return render_template("template01.html", pagename="Home")
+    return render_template("main01.html", pagename="Home", cameras=config.myconfig["cameras"].values())
 
     
-@app.route('/capture.jpg')
-def captureImage():
+@app.route('/<nickname>/capture.jpg')
+def captureImage(nickname):
 
     #not logged in? go away
     if None == request.cookies.get('username'):
         abort(500)  
         return
 
+    if not nickname in config.myconfig["cameras"]:
+        print(f"Error: unknown camera '{nickname}'")
+        abort(500)  
+        return
+
+    cam = config.myconfig["cameras"][nickname]
+
     tstart = time.time()
 
-    #camurl = "rtsp://" + config.myconfig["cam_login"] + ":" + config.myconfig["cam_password"] + "@" + config.myconfig["cam_ip"] + ":" + config.myconfig["cam_port"]+ config.myconfig["cam_suffix"]
-    camurl = "rtsp://" + config.myconfig["cam_ip"] + ":" + config.myconfig["cam_port"]+ config.myconfig["cam_suffix"]
-    io_buf = BytesIO()
+    camurl = f"rtsp://{cam.ip}:{cam.port}{cam.suffix}"
 
-    # shamelessly taken from RTSPBrute software source (thanks for sharing <3)
-    # https://gitlab.com/woolf/RTSPbrute/-/blob/master/rtspbrute/modules/attack.py
-    with av.open(
-        camurl,
-        options={
-            "rtsp_transport": "tcp",
-            "rtsp_flags": "prefer_tcp",
-            "stimeout": "3000000",
-        },
-        timeout=60.0,
-    ) as container:
-        stream = container.streams.video[0]
-        stream.thread_type = "AUTO"
-        for frame in container.decode(video=0):
-            frame.to_image().save(io_buf, format="jpeg")
-            break
-    
-    #put back at start in case
-    io_buf.seek(0)
+    try:
+        io_buf = BytesIO()
 
-    tend=time.time()
-    #print("DBG: acquisition in ", tend - tstart)
+        # shamelessly taken from RTSPBrute software source (thanks for sharing <3)
+        # https://gitlab.com/woolf/RTSPbrute/-/blob/master/rtspbrute/modules/attack.py
+        with av.open(
+            camurl,
+            options={
+                "rtsp_transport": "tcp",
+                "rtsp_flags": "prefer_tcp",
+                "stimeout": "3000000",
+            },
+            timeout=60.0,
+        ) as container:
+            stream = container.streams.video[0]
+            stream.thread_type = "AUTO"
+            for frame in container.decode(video=0):
+                frame.to_image().save(io_buf, format="jpeg")
+                break
+        
+        #put back at start in case
+        io_buf.seek(0)
 
-    #return the in memory image
-    return send_file(io_buf, mimetype='image/jpeg')
+        tend=time.time()
+        if config.myconfig["detailedLogs"]:
+            print(f"DBG: acquisition of {nickname} in {(tend - tstart):0.2f}s" )
+
+        #return the in memory image
+        return send_file(io_buf, mimetype='image/jpeg')
+    except Exception as ex:
+        print(f"ERROR getting data for {nickname} : {ex}")
+        abort(501)
 
 
 ##########################################################################################
 #Login page
 @app.route('/login', methods=['POST', 'GET'])
 def doLogin():
+
+    if config.myconfig["detailedLogs"]:
+        print(f"Login page shown by request of {request.remote_addr}")
+        
     if request.method == "GET":
         return render_template("login01.html", pagename="login", message="")
     else:
@@ -83,6 +99,9 @@ def doLogin():
         
         if vLogin == config.myconfig["app_login"] and vPwd == config.myconfig["app_password"]:
             #Login is correct
+            if config.myconfig["detailedLogs"]:
+                print(f"Login attempt SUCCESS of {request.remote_addr} !")
+
             resp = make_response( redirect("/") )
             
             resp.set_cookie ('username', vLogin, expires=datetime.now() + timedelta(days=30))
@@ -90,6 +109,9 @@ def doLogin():
             return resp
         else:
             #incorrect login
+            if config.myconfig["detailedLogs"]:
+                print(f"Login attempt FAILED by {request.remote_addr} using '{vLogin}' : '{vPwd}'")
+
             return render_template("login01.html", pagename="login", message="Login incorrect")
 
 

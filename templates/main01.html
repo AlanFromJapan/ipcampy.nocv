@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <title>ipcampy.noCV - {{ pagename }}</title>
+    <link rel="stylesheet" href="css/style.css" type="text/css" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  </head>
+<body>
+  <div id="divTitle">ipcampy.noCV</div>
+  <br/>
+
+{% for cam in cameras %}
+<div class="showcamera">
+<p class="camname">{{ cam.nickname }}</p>
+<img name="capture" id="{{ cam.nickname }}" src="/{{ cam.nickname }}/capture.jpg?dummy"/><span id="spanBlinker"></span> <br/>
+</div>
+{% endfor %}
+<br/>
+<br/>
+
+<input type="range" min="5" max="60" value="6" class="slider" id="sliderUpdateinSec" />&nbsp;<span id="spanSlider">6</span> second(s) interval.
+
+<span class="footnote">ipcampy.noCV - by AlanFromJapan - MIT License - <a href="https://github.com/AlanFromJapan/ipcampy.nocv">GitHub</a></span>
+
+<script type="text/javascript">
+  //AUTOREFRESH https://stackoverflow.com/questions/20877813/auto-refresh-images-in-html
+window.onload = function() {
+  // Update the current slider value (each time you drag the slider handle)
+  document.getElementById("sliderUpdateinSec").oninput = function() {
+    document.getElementById("spanSlider").innerHTML = this.value;
+  } 
+
+  //AUTOREFRESH
+      function updateImage() {
+
+          var slider = document.getElementById("sliderUpdateinSec");
+          clearInterval(refreshtimer);
+          refreshtimer = setInterval(updateImage, 1000 * slider.value);
+
+          var captureS = document.getElementsByName("capture");
+          for (let i = 0; i < captureS.length; i++) {
+            //the "?time" is unnecessary but forces a refresh of the image (GET params ignored for this function)
+            cap = captureS[i];
+            cap.src = "/" + cap.id + "/capture.jpg?" + new Date().getTime();
+
+          }
+      }
+
+      var refreshtimer = setInterval(updateImage, 3000);
+  
+}
+
+</script>
+</body>
