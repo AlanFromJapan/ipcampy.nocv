@@ -8,6 +8,7 @@ import sys
 import time
 
 from io import BytesIO
+from sharedObjects import IpCamera
 
 import av
 
@@ -27,7 +28,7 @@ def homepage():
     #not logged in? go away
     if None == request.cookies.get('username'):
         return redirect("login")
-    return render_template("main01.html", pagename="Home", cameras=config.myconfig["cameras"].values())
+    return render_template("main01.html", pagename="Home", cameras=config.myconfig["cameras"])
 
     
 @app.route('/<nickname>/capture.jpg')
@@ -38,16 +39,14 @@ def captureImage(nickname):
         abort(500)  
         return
 
-    if not nickname in config.myconfig["cameras"]:
+    if not nickname in [x.nickname for x in config.myconfig["cameras"]]:
         print(f"Error: unknown camera '{nickname}'")
         abort(500)  
         return
 
-    cam = config.myconfig["cameras"][nickname]
+    cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
 
     tstart = time.time()
-
-    camurl = f"rtsp://{cam.ip}:{cam.port}{cam.suffix}"
 
     try:
         io_buf = BytesIO()
@@ -55,7 +54,7 @@ def captureImage(nickname):
         # shamelessly taken from RTSPBrute software source (thanks for sharing <3)
         # https://gitlab.com/woolf/RTSPbrute/-/blob/master/rtspbrute/modules/attack.py
         with av.open(
-            camurl,
+            cam.url(),
             options={
                 "rtsp_transport": "tcp",
                 "rtsp_flags": "prefer_tcp",

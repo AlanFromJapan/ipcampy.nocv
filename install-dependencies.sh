@@ -8,6 +8,6 @@ sudo apt install libavformat-dev libavdevice-dev python3-dev --yes
 sudo apt install libjpeg-dev libtiff-dev zlibc zlib1g-dev --yes
 
 #get flask and other libs
-sudo pip install flask av pillow
+sudo python3 -m pip install -r requirements.txt
 
 
