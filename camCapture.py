@@ -14,7 +14,7 @@ from PIL import ImageDraw
 from PIL import ImageFont
 
 #fonts
-font_label = ImageFont.truetype(os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), config.myconfig["path 2 fonts"]), '8bitOperatorPlusSC-Regular.ttf'), 16)
+font_label = ImageFont.truetype(os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), config.myconfig["path 2 fonts"]), config.myconfig["font label"]), 16)
 
 ##############################################################################3
 # Capture 1 still frame from the camera and decorates
@@ -50,14 +50,14 @@ def captureStill (cam: IpCamera):
 
         #add time
         img = Image.open(io_buf)
-        draw = ImageDraw.Draw(img)
+        draw = ImageDraw.Draw(img, "RGBA")
 
         #if label not disabled for that cam
         if cam.overlay_label != "":
             label = cam.overlay_label.format(datetime.now(), cam.nickname, cam.ip, cam.port)
             w,h = draw.textsize(label, font_label)
             x,y= 1, img.height            
-            draw.rectangle((x, y, x + w, y - h), fill=(192, 192, 192), outline=(255, 255, 255))
+            draw.rectangle((x, y, x + w, y - h), fill=(192, 192, 192, 180), outline=(255, 255, 255))
             draw.text((x,y - h), text=label, fill=(30,30,30), font=font_label)
 
         #put back at start (needed here!)

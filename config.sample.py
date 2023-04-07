@@ -14,5 +14,6 @@ myconfig = {
 
     "detailedLogs" : True,
 
-    "path 2 fonts": "static/fonts"
+    "path 2 fonts": "static/fonts",
+    "font label" : '8bitOperatorPlusSC-Regular.ttf'
 }
