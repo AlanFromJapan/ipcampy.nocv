@@ -7,10 +7,10 @@ from datetime import datetime, timedelta
 import sys
 import time
 
-from io import BytesIO
+from io import BytesIO, StringIO
 from sharedObjects import IpCamera
 
-import av
+import camCapture
 
 ############################ FLASK VARS #################################
 app = Flask(__name__, static_url_path='')
@@ -46,40 +46,17 @@ def captureImage(nickname):
 
     cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
 
-    tstart = time.time()
+    io_buf, _ = camCapture.captureStill(cam)
 
-    try:
-        io_buf = BytesIO()
-
-        # shamelessly taken from RTSPBrute software source (thanks for sharing <3)
-        # https://gitlab.com/woolf/RTSPbrute/-/blob/master/rtspbrute/modules/attack.py
-        with av.open(
-            cam.url(),
-            options={
-                "rtsp_transport": "tcp",
-                "rtsp_flags": "prefer_tcp",
-                "stimeout": "3000000",
-            },
-            timeout=60.0,
-        ) as container:
-            stream = container.streams.video[0]
-            stream.thread_type = "AUTO"
-            for frame in container.decode(video=0):
-                frame.to_image().save(io_buf, format="jpeg")
-                break
-        
-        #put back at start in case
+    if io_buf == None:
+        #something wrong happened
+        abort(501)
+    else:
+        #put back at start (in case it wasn't already)
         io_buf.seek(0)
 
-        tend=time.time()
-        if config.myconfig["detailedLogs"]:
-            print(f"DBG: acquisition of {nickname} in {(tend - tstart):0.2f}s" )
-
         #return the in memory image
-        return send_file(io_buf, mimetype='image/jpeg')
-    except Exception as ex:
-        print(f"ERROR getting data for {nickname} : {ex}")
-        abort(501)
+        return send_file(io_buf, mimetype='image/jpeg')        
 
 
 ##########################################################################################

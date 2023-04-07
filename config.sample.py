@@ -12,5 +12,7 @@ myconfig = {
 
     "isProd" : False,
 
-    "detailedLogs" : True
+    "detailedLogs" : True,
+
+    "path 2 fonts": "static/fonts"
 }
