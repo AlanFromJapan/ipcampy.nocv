@@ -1,7 +1,18 @@
+/* Free fonts from https://www.1001freefonts.com/ */
+@font-face {
+    font-family: "8BitOperatorPlus";
+    src: url("/fonts/8bitOperatorPlus8-Bold.ttf");
+}
+@font-face {
+    font-family: "VCR_OSD";
+    src: url("/fonts/VCR_OSD_MONO.ttf");
+}
+
+
 body {
     background-color: black;
     color: gainsboro;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-family: "VCR_OSD", Verdana, Geneva, Tahoma, sans-serif;
 }
 
 span.footnote{
@@ -14,14 +25,16 @@ span.footnote{
     width: 500px;
     margin:auto;
     color: goldenrod;
-    font-size:x-large;
+    font-size:xx-large;
     font-weight: 700;
+    font-family: "8BitOperatorPlus";
 
 }
 
 div.showcamera {
     border:solid 1px goldenrod;
 }
+
 
 div.showcamera p.camname {
     font-size: larger;
