@@ -16,6 +16,30 @@ from PIL import ImageFont
 #fonts
 font_label = ImageFont.truetype(os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), config.myconfig["path 2 fonts"]), config.myconfig["font label"]), 16)
 
+#camera av-containters (dict camera nickname > container)
+__CONTAINERS = {}
+
+
+def __getContainer(cam:IpCamera):
+    if cam.nickname in __CONTAINERS:
+        return __CONTAINERS[cam.nickname]
+    
+    cont= av.open(
+            cam.url(),
+            options={
+                "rtsp_transport": "tcp",
+                "rtsp_flags": "prefer_tcp",
+                "stimeout": "3000000",
+            },
+            timeout=60.0,
+    )
+    stream = cont.streams.video[0]
+    stream.thread_type = "AUTO"
+    #stream.codec_context.skip_frame = "NONKEY"
+
+    __CONTAINERS[cam.nickname] = cont
+    return cont
+
 ##############################################################################3
 # Capture 1 still frame from the camera and decorates
 # 
@@ -27,20 +51,10 @@ def captureStill (cam: IpCamera):
 
         # shamelessly taken from RTSPBrute software source (thanks for sharing <3)
         # https://gitlab.com/woolf/RTSPbrute/-/blob/master/rtspbrute/modules/attack.py
-        with av.open(
-            cam.url(),
-            options={
-                "rtsp_transport": "tcp",
-                "rtsp_flags": "prefer_tcp",
-                "stimeout": "3000000",
-            },
-            timeout=60.0,
-        ) as container:
-            stream = container.streams.video[0]
-            stream.thread_type = "AUTO"
-            for frame in container.decode(video=0):
-                frame.to_image().save(io_buf, format="jpeg")
-                break
+        container = __getContainer(cam)
+        for frame in container.decode(video=0):
+            frame.to_image().save(io_buf, format="jpeg")
+            break
         
         #put back at start in case
         io_buf.seek(0)
