@@ -1,14 +1,6 @@
-<html>
-  <head>
-    <title>ipcampy.noCV - {{ pagename }}</title>
-    <link rel="stylesheet" href="css/style.css" type="text/css" />
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  </head>
-<body>
-  <div id="divTitle">ipcampy.noCV</div>
-  <br/>
+{% extends 'master01.html' %}
 
+{% block contents %} 
 {% for cam in cameras %}
 <div class="showcamera">
 <p class="camname">{{ cam.nickname }}</p>
@@ -20,7 +12,6 @@
 
 <input type="range" min="5" max="60" value="6" class="slider" id="sliderUpdateinSec" />&nbsp;<span id="spanSlider">6</span> second(s) interval.
 
-<span class="footnote">ipcampy.noCV - by AlanFromJapan - MIT License - <a href="https://github.com/AlanFromJapan/ipcampy.nocv">GitHub</a></span>
 
 <script type="text/javascript">
   //AUTOREFRESH https://stackoverflow.com/questions/20877813/auto-refresh-images-in-html
@@ -51,4 +42,4 @@ window.onload = function() {
 }
 
 </script>
-</body>
+{% endblock %}

@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <title>ipcampy.noCV - {{ pagename }}</title>
+    <link rel="stylesheet" href="css/style.css" type="text/css" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  </head>
+<body>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flashes_container">
+    <div class="flashes">
+      ℹ️ Info
+      <ul >
+      {% for category, message in messages %}
+        <li class="flashitem_{{ category }}">{{ message }}</li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+{% endwith %}
+
+  <div id="divTitle">ipcampy.noCV</div>
+  <br/>
+
+{% block contents %} {% endblock %}
+
+<span class="footnote">ipcampy.noCV - by AlanFromJapan (2023~) - MIT License - <a href="https://github.com/AlanFromJapan/ipcampy.nocv">GitHub</a></span>
+
+</body>
