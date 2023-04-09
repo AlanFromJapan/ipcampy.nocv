@@ -2,7 +2,7 @@
 # https://stackoverflow.com/questions/49978705/access-ip-camera-in-python-opencv#49979186
 
 import config
-from flask import Flask, request, send_file, render_template, abort, redirect, make_response
+from flask import Flask, request, send_file, render_template, abort, redirect, make_response, flash
 from datetime import datetime, timedelta
 import sys
 import time
@@ -20,17 +20,40 @@ cap = None
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'ico'])
 
 
+##########################################################################################
+################################## Web requests ##########################################
+##########################################################################################
 
-############################ Web requests ###############################
-
+##########################################################################################
+#Default home page with list of cameras and low res capture
 @app.route('/')
 def homepage():
     #not logged in? go away
     if None == request.cookies.get('username'):
-        return redirect("login")
+        return redirect("/login")
     return render_template("main01.html", pagename="Home", cameras=config.myconfig["cameras"])
 
+
+##########################################################################################
+#Zooms to ONE camera (show in high res)
+@app.route('/zoom/<nickname>')
+def zoomPage(nickname):
+    #not logged in? go away
+    if None == request.cookies.get('username'):
+        return redirect("/login")
+
+    if not nickname in [x.nickname for x in config.myconfig["cameras"]]:
+        flash(f"Error: unknown camera '{nickname}'")
+        return redirect("/")
+
+    cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
+
+    return render_template("zoom01.html", pagename=f"Zoom on [{cam.nickname}]", cam=cam)
+
     
+
+##########################################################################################
+#Callback to generate a capture on the fly
 @app.route('/<nickname>/capture.jpg')
 def captureImage(nickname):
 
@@ -46,7 +69,9 @@ def captureImage(nickname):
 
     cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
 
-    io_buf, _ = camCapture.captureStill(cam)
+    highRes = True if "highRes" in request.args and request.args["highRes"] == "true" else False
+
+    io_buf, _ = camCapture.captureStill(cam, highRes=highRes)
 
     if io_buf == None:
         #something wrong happened

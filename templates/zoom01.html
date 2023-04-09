@@ -1,13 +1,12 @@
 {% extends 'master01.html' %}
 
 {% block contents %} 
-{% for cam in cameras %}
-<div class="showcamera">
-<span class="camname">{{ cam.nickname }}</span> <span><a href="/zoom/{{ cam.nickname }}">[Zoom]</a></span><br/>
+<a href="/">[Back to cameras list]</a><br/>
 <br/>
-<img name="capture" id="{{ cam.nickname }}" src="/{{ cam.nickname }}/capture.jpg?dummy"/><span id="spanBlinker"></span> <br/>
+<div class="showcamera">
+<p class="camname">{{ cam.nickname }}</p>
+<img name="capture" id="{{ cam.nickname }}" src="/{{ cam.nickname }}/capture.jpg?highRes=true&dummy" width="100%"/><span id="spanBlinker"></span> <br/>
 </div>
-{% endfor %}
 <br/>
 <br/>
 
@@ -33,7 +32,7 @@ window.onload = function() {
           for (let i = 0; i < captureS.length; i++) {
             //the "?time" is unnecessary but forces a refresh of the image (GET params ignored for this function)
             cap = captureS[i];
-            cap.src = "/" + cap.id + "/capture.jpg?" + new Date().getTime();
+            cap.src = "/" + cap.id + "/capture.jpg?highRes=true&" + new Date().getTime();
 
           }
       }
