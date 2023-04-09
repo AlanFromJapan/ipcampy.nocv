@@ -31,7 +31,7 @@ def homepage():
     #not logged in? go away
     if None == request.cookies.get('username'):
         return redirect("/login")
-    return render_template("main01.html", pagename="Home", cameras=config.myconfig["cameras"])
+    return render_template("main01.html", pagename="Home", cameras=config.myconfig["cameras"], conf=config.myconfig)
 
 
 ##########################################################################################
@@ -48,7 +48,7 @@ def zoomPage(nickname):
 
     cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
 
-    return render_template("zoom01.html", pagename=f"Zoom on [{cam.nickname}]", cam=cam)
+    return render_template("zoom01.html", pagename=f"Zoom on [{cam.nickname}]", cam=cam, conf=config.myconfig)
 
     
 
