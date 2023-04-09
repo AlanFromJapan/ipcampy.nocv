@@ -9,6 +9,12 @@ Documentation details are here: http://electrogeek.tokyo/ipcampy.nocv.html
 - some guy doing brute force with av (FFMPEG) and **not** OpenCV https://gitlab.com/woolf/RTSPbrute/-/blob/master/rtspbrute/modules/attack.py
 - the av lib https://pypi.org/project/av/
 
+## Ideas and todos
+
+- Use similar technique to make regular stills on disk with ffmeg instead of reinventing the wheel https://binesh-amarasekara.medium.com/ip-camera-recording-on-the-raspberry-pi-c760091e5351
+
+# Setup and maintenance 
+
 ## Installation
 
 1. git clone https://github.com/AlanFromJapan/ipcampy.nocv.git
@@ -22,6 +28,7 @@ Documentation details are here: http://electrogeek.tokyo/ipcampy.nocv.html
 1. sudo passwd -l webuser #disable the login of the user but allows to su to
 1. edit the /ssl/*.pem permissions so the files belong to group webuser and that group has readonly access (otherwise can't run as ssh)
 1. now run the ./start-service.sh on startup, usually by putting it in /etc/rc.local
+1. (optional) you might want to redirect your running port to port 443 so add this also in your /etc/rc.local : `iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port *[the port you use to run the app]*` 
 1. reboot and test...
 
 ## Troubleshooting
@@ -32,7 +39,7 @@ So I got some errors, and I'm trying to get around it. Workarounds only here, if
 
 After a few days it happened to randomly stop answering. Didn't get why, it was not a memory or CPU problem, logs were ok ... just Flask not answering anymore. Bug of Flask (it has been serving my other website for 700+ days an counting so I doubt), maybe some handling not freed or port? Something due to the av lib?
 
-WORKAROUND: just cron a restart daily, that's it.
+WORKAROUND: just cron a restart daily using the eponym script, that's it.
 
 ### The stop start restart start complaining about tty and askpass?
 
