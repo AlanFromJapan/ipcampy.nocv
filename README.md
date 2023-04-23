@@ -11,7 +11,7 @@ Documentation details are here: http://electrogeek.tokyo/ipcampy.nocv.html
 
 ## Ideas and todos
 
-- Use similar technique to make regular stills on disk with ffmeg instead of reinventing the wheel https://binesh-amarasekara.medium.com/ip-camera-recording-on-the-raspberry-pi-c760091e5351
+- Use ffmpeg in the back to save image every x seconds and just show it with the site. No need to add a Python overlay if ffmpeg does it, and it does : `ffmpeg -i rtsp://my.camera.ip.address:554/2 -vf fps=1/5  camera%03d.jpg` will save 1 JPEG every 5 sec [as the doc says](https://trac.ffmpeg.org/wiki/Create%20a%20thumbnail%20image%20every%20X%20seconds%20of%20the%20video)
 
 # Setup and maintenance 
 
