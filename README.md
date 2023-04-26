@@ -13,6 +13,22 @@ Documentation details are here: http://electrogeek.tokyo/ipcampy.nocv.html
 
 - Use ffmpeg in the back to save image every x seconds and just show it with the site. No need to add a Python overlay if ffmpeg does it, and it does : `ffmpeg -i rtsp://my.camera.ip.address:554/2 -vf fps=1/5  camera%03d.jpg` will save 1 JPEG every 5 sec [as the doc says](https://trac.ffmpeg.org/wiki/Create%20a%20thumbnail%20image%20every%20X%20seconds%20of%20the%20video)
 
+## Background batch explanation
+If you choose so to activate them, the batch will do the follosing:
+- Every x seconds, take a snapshot and save it in the target folder with a timestamped name
+- Every day trash all the pictures older than 48h (so you keep at max 2 days of stills)
+
+### Command details
+`ffmpeg -nostdin -i rtsp://my.camera.ip.address:554/2 -vf "fps=1/5, drawtext=fontfile=/usr/share/fonts/TTF/Vera.ttf: text='%{localtime}': x=(w-tw)/2: y=h-(2*lh): fontcolor=white: box=1: boxcolor=0x00000000@1" -loglevel repeat+warning  -strftime 1 "camera-%Y%m%d_%H%M%S.jpg" > /tmp/ffmpeg.test/logs.txt 2>&1 &`
+
+- `-nostdin` ffmpeg won't expect stdin to be used so plays nicely in background mode
+- `-vf ` use multiple filters chained on the current stream (*filtergraph*, separated by a comma, collon are param separators). RTFM [on this page](https://ffmpeg.org/ffmpeg-filters.html) and [this one](https://trac.ffmpeg.org/wiki/FilteringGuide)
+    - `drawtext=xxx` draws current time (as of server) on the image bottom-centered 
+    - `fps=1/5` set frequence of capture in fps to 1 every 5 seconds (=0.2 fps) ~= drop every frame except 1 every n sec
+- `-loglevel repeat+warning` duplicated consequent messages aren't displayer (only first line) and show warning or worse only
+- `-s 320x200` force resize to given size
+- `-strftime 1` enables [strftime](https://man7.org/linux/man-pages/man3/strftime.3.html) formatting on the output filename 
+
 # Setup and maintenance 
 
 ## Installation
