@@ -2,9 +2,9 @@
 # https://stackoverflow.com/questions/49978705/access-ip-camera-in-python-opencv#49979186
 
 import config
-from flask import Flask, request, send_file, render_template, abort, redirect, make_response, flash
+from flask import Flask, request, send_file, render_template, abort, redirect, make_response, flash, Response
 from datetime import datetime, timedelta
-import sys
+import sys, os
 import time
 
 from io import BytesIO, StringIO
@@ -84,6 +84,38 @@ def captureImage(nickname):
         return send_file(io_buf, mimetype='image/jpeg')        
 
 
+
+        
+##########################################################################################
+#Pseudo video Motion JPEG style
+def getStill (nickname:str):
+    #list of files
+    path= os.path.join("static", "stills")
+    l = [l for l in os.listdir(path) if os.path.isfile(os.path.join(path, l)) and l.lower()[-4:] == '.jpg']
+
+    #sorted ignorecase
+    l = sorted(l, key=lambda x: str(x).lower())
+
+    for f in l:
+        frame = open(os.path.join(path,f), 'rb').read()
+        time.sleep(0.3)
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        
+@app.route("/still/<nickname>")
+def filmstripImage(nickname:str):
+    #https://blog.miguelgrinberg.com/post/video-streaming-with-flask
+
+    r = Response(getStill(nickname=nickname),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    r.headers.set("X-Framerate", "1")
+    return r
+
+@app.route('/stills/<nickname>')
+def stillsPage(nickname):
+    #todo fixme
+    return render_template("filmstrip.html", cam=config.myconfig["cameras"][0])
+    
 ##########################################################################################
 #Login page
 @app.route('/login', methods=['POST', 'GET'])

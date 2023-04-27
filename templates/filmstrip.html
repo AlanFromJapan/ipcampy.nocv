@@ -1,0 +1,9 @@
+{% extends 'master01.html' %}
+
+{% block contents %} 
+<a href="/">[Back to cameras list]</a><br/>
+<h1>Filmstrip of latest stills from {{ cam.nickname }}</h1>
+
+<img src="{{ url_for('filmstripImage', nickname=cam.nickname) }}">
+
+{% endblock %}
