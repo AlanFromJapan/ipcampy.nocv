@@ -12,13 +12,16 @@ from sharedObjects import IpCamera
 
 import camCapture
 
+
+############################ CONSTANTS #################################
+TIMELAPSE_IMG_PER_SEC = 3.0
+
 ############################ FLASK VARS #################################
 app = Flask(__name__, static_url_path='')
 
 cap = None
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'ico'])
-
 
 ##########################################################################################
 ################################## Web requests ##########################################
@@ -87,34 +90,50 @@ def captureImage(nickname):
 
         
 ##########################################################################################
-#Pseudo video Motion JPEG style
-def getStill (nickname:str):
-    #list of files
+#TIMELAPSE: pseudo video Motion JPEG style
+
+#returns the next still taken for that camera 
+def getNextStill (nickname:str):
+    #list of stills for that camera
     path= os.path.join("static", "stills")
-    l = [l for l in os.listdir(path) if os.path.isfile(os.path.join(path, l)) and l.lower()[-4:] == '.jpg']
+    l = [l for l in os.listdir(path) if 
+         os.path.isfile(os.path.join(path, l)) 
+         and l.lower()[-4:] == '.jpg' 
+         and l.lower().startswith(nickname.lower()) 
+         ]
+
+    if len(l) == 0:
+        abort(404)
 
     #sorted ignorecase
     l = sorted(l, key=lambda x: str(x).lower())
 
     for f in l:
         frame = open(os.path.join(path,f), 'rb').read()
-        time.sleep(0.3)
+        #here is where the framerate is set
+        time.sleep(1.0/TIMELAPSE_IMG_PER_SEC)
+        #notice the yield
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
         
+
 @app.route("/still/<nickname>")
-def filmstripImage(nickname:str):
+def timelapseImage(nickname:str):
     #https://blog.miguelgrinberg.com/post/video-streaming-with-flask
 
-    r = Response(getStill(nickname=nickname),
+    r = Response(getNextStill(nickname=nickname),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
-    r.headers.set("X-Framerate", "1")
+    #doesn't look very efficient but in case ...
+    r.headers.set("X-Framerate", "3")
     return r
 
-@app.route('/stills/<nickname>')
-def stillsPage(nickname):
-    #todo fixme
-    return render_template("filmstrip.html", cam=config.myconfig["cameras"][0])
+
+@app.route('/timelapse/<nickname>')
+def timelapsePage(nickname):
+    
+    cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
+
+    return render_template("timelapse.html", cam=cam)
     
 ##########################################################################################
 #Login page

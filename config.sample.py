@@ -2,8 +2,8 @@ from sharedObjects import IpCamera
 
 myconfig = {
     "cameras" : [
-        IpCamera ("Doorway", "192.168.0.1", "554", "admin", "xxxxxxxxxxxxx", "/2"),
-        IpCamera ("Front-Lawn", "192.168.0.2", "554", None, None, "/2")        
+        IpCamera ("Doorway", "192.168.0.1", "554", "admin", "xxxxxxxxxxxxx", suffixLowRes="/2", suffixHighRes="/1"),
+        IpCamera ("Front-Lawn", "192.168.0.2", "554", None, None, suffixLowRes="/2", suffixHighRes="/1")        
     ],
 
     "app_login" : "test",
