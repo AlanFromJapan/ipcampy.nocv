@@ -6,7 +6,9 @@ from flask import Flask, request, send_file, render_template, abort, redirect, m
 from datetime import datetime, timedelta
 import sys, os
 import time
+import re
 
+from werkzeug.utils import secure_filename
 from io import BytesIO, StringIO
 from sharedObjects import IpCamera
 
@@ -15,13 +17,19 @@ import camCapture
 
 ############################ CONSTANTS #################################
 TIMELAPSE_IMG_PER_SEC = 3.0
+REGEX_STILLS_NAME = """([^_]+)_(?P<date>[^_]+)_(?P<time>[^_]+)\.jpg$"""
 
-############################ FLASK VARS #################################
+############################ FLASK VARS & GLOBALS #################################
 app = Flask(__name__, static_url_path='')
+#needed for flash(), you need session, so you need to encrypt stuffs
+app.secret_key = config.myconfig["secret_key"]
 
-cap = None
+reStills = re.compile(REGEX_STILLS_NAME, re.IGNORECASE)
+
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'ico'])
+
+
 
 ##########################################################################################
 ################################## Web requests ##########################################
@@ -92,8 +100,8 @@ def captureImage(nickname):
 ##########################################################################################
 #TIMELAPSE: pseudo video Motion JPEG style
 
-#returns the next still taken for that camera 
-def getNextStill (nickname:str):
+#returns the list of stills present for that camera. Assumes name was sanitized.
+def stillsListForCamera(nickname:str):
     #list of stills for that camera
     path= os.path.join("static", "stills")
     l = [l for l in os.listdir(path) if 
@@ -101,16 +109,27 @@ def getNextStill (nickname:str):
          and l.lower()[-4:] == '.jpg' 
          and l.lower().startswith(nickname.lower()) 
          ]
+    
+    #sorted ignorecase
+    l = sorted(l, key=lambda x: str(x).lower())
+    return l
+
+#returns the next still taken for that camera 
+def getNextStill (nickname:str):
+    #just to be safe (CompTIA Security+)
+    nickname = secure_filename(nickname)
+
+    #list of stills for that camera
+    l = stillsListForCamera(nickname)
 
     if len(l) == 0:
         abort(404)
 
-    #sorted ignorecase
-    l = sorted(l, key=lambda x: str(x).lower())
 
+    path= os.path.join("static", "stills")
     for f in l:
         frame = open(os.path.join(path,f), 'rb').read()
-        #here is where the framerate is set
+        #here is where the framerate is enforced
         time.sleep(1.0/TIMELAPSE_IMG_PER_SEC)
         #notice the yield
         yield (b'--frame\r\n'
@@ -124,7 +143,7 @@ def timelapseImage(nickname:str):
     r = Response(getNextStill(nickname=nickname),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
     #doesn't look very efficient but in case ...
-    r.headers.set("X-Framerate", "3")
+    r.headers.set("X-Framerate", str(int(TIMELAPSE_IMG_PER_SEC)))
     return r
 
 
@@ -134,7 +153,51 @@ def timelapsePage(nickname):
     cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
 
     return render_template("timelapse.html", cam=cam)
+
+
+##########################################################################################
+#FILMSTRIP navigate through the pictures
+@app.route('/strip/<nickname>', methods=['GET','POST'])
+def stripPage(nickname):
+    #just to be safe (CompTIA Security+)
+    print(f"Strip of '{nickname}' (secured to '{secure_filename(nickname)}') ")
+    nickname = secure_filename(nickname)
+
+    cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
+
+    imgURL = None
+
+    #POST BACK POST BACK POST BACK
+    if request.method == 'POST':
+        # Goto
+        if request.form["action"] == "goto":
+            flash(f"Goto time " + request.form["time"])
+
+            #list of stills for that camera
+            l = stillsListForCamera(nickname)
+
+            if len(l) == 0:
+                abort(404)
+            t = request.form["time"].replace(":", "")
+            f = None
+            for fname in l:
+                m = reStills.search(fname)
+                if not m:
+                    #no match ?? Shouldn't happen
+                    continue
+                if m.group("time").startswith(t):
+                    #found it!
+                    f = fname
+                    break
+            print(f"Strip GOTO '{f}'")
+            if f:
+                imgURL = "/stills/" + f
+        else:
+            flash("Unknow or TODO implement", "error")            
     
+    return render_template("filmstrip.html", cam=cam, imgURL=imgURL)
+
+
 ##########################################################################################
 #Login page
 @app.route('/login', methods=['POST', 'GET'])
@@ -194,6 +257,4 @@ If you don't provide the *.pem files it will start as an HTTP app. You need to p
             app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True)
 
     finally:
-        if cap != None:
-            print("Release OpenCV ...")
-            cap.release()
+        pass

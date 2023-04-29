@@ -3,7 +3,7 @@
 {% block contents %} 
 {% for cam in cameras %}
 <div class="showcamera">
-<span class="camname">{{ cam.nickname }}</span> <span><a href="/zoom/{{ cam.nickname }}">[Zoom]</a></span> <span><a href="/timelapse/{{ cam.nickname }}">[Timelapse]</a></span><br/>
+<span class="camname">{{ cam.nickname }}</span> <span><a href="/zoom/{{ cam.nickname }}">[Zoom]</a></span> <span><a href="/timelapse/{{ cam.nickname }}">[Timelapse]</a></span> <span><a href="/strip/{{ cam.nickname }}">[Filmstrip]</a></span><br/>
 <br/>
 <img name="capture" id="{{ cam.nickname }}" src="/{{ cam.nickname }}/capture.jpg?dummy"/><span id="spanBlinker"></span> <br/>
 </div>

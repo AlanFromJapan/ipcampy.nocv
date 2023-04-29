@@ -4,6 +4,11 @@
 <a href="/">[Back to cameras list]</a><br/>
 <h1>Filmstrip of latest stills from {{ cam.nickname }}</h1>
 
-<img src="{{ url_for('filmstripImage', nickname=cam.nickname) }}">
+
+<img id="stillImg" src="{{ imgURL }}" />
+<form id="theForm" method="post" >
+    <input type="time" id="time" name="time" />
+    <button type="button" onClick="clickConfirm('action', 'goto', '');"><b>GOTO</b> that time</button>
+</form>
 
 {% endblock %}

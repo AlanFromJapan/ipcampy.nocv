@@ -44,3 +44,25 @@ div.showcamera *.camname {
     color:gold;
     font-weight: bold;
 }
+
+/* ---------------------- FLASH ----------------------- */
+
+div.flashes_container {
+    width: 80%;
+    margin: 30px;
+    display: flex;
+    justify-content: center;
+}
+*.flashes {
+    border: whitesmoke 2px solid;
+    background-color: #202020;
+    width: 80%;
+    color: goldenrod;
+    padding: 2px;
+}
+LI.flashitem_error {
+    color: crimson;
+}
+LI.flashitem_success {
+    color:forestgreen;
+}

@@ -9,6 +9,7 @@ myconfig = {
     "app_login" : "test",
     "app_password" : "test",
     "app_port" : "56789",
+    "secret_key" : "whatever you want!!",
 
     "isProd" : False,
 
