@@ -19,9 +19,10 @@ If you choose so to activate them, the batch will do the follosing:
 - Every day trash all the pictures older than 48h (so you keep at max 2 days of stills)
 
 ### Command details
-`ffmpeg -nostdin -i rtsp://my.camera.ip.address:554/2 -vf "fps=1/5, drawtext=fontfile=/usr/share/fonts/TTF/Vera.ttf: text='%{localtime}': x=(w-tw)/2: y=h-(2*lh): fontcolor=white: box=1: boxcolor=0x00000000@1" -loglevel repeat+warning  -strftime 1 "camera-%Y%m%d_%H%M%S.jpg" > /tmp/ffmpeg.test/logs.txt 2>&1 &`
+`ffmpeg -nostdin -rtsp_transport tcp -rtsp_flags prefer_tcp -i rtsp://my.camera.ip.address:554/2 -vf "fps=1/5, drawtext=fontfile=/usr/share/fonts/TTF/Vera.ttf: text='%{localtime}': x=(w-tw)/2: y=h-(2*lh): fontcolor=white: box=1: boxcolor=0x00000000@1" -loglevel repeat+warning  -strftime 1 "camera_%Y%m%d_%H%M%S.jpg" > /tmp/ffmpeglogs.txt 2>&1 &`
 
 - `-nostdin` ffmpeg won't expect stdin to be used so plays nicely in background mode
+- `-rtsp_transport tcp -rtsp_flags prefer_tcp` are optional if you work on the same network, but ffmpeg uses UDP by default and in case your UDP traffic isn't routed properly (you have your cameras on a separate NW of your main NW as you should) then these 2 force the traffic to be on TCP. **BEWARE**: it must be *BEFORE* the `-i` in the parameters list [otherwise it's uneffective](https://github.com/kkroening/ffmpeg-python/issues/537)
 - `-vf ` use multiple filters chained on the current stream (*filtergraph*, separated by a comma, collon are param separators). RTFM [on this page](https://ffmpeg.org/ffmpeg-filters.html) and [this one](https://trac.ffmpeg.org/wiki/FilteringGuide)
     - `drawtext=xxx` draws current time (as of server) on the image bottom-centered 
     - `fps=1/5` set frequence of capture in fps to 1 every 5 seconds (=0.2 fps) ~= drop every frame except 1 every n sec

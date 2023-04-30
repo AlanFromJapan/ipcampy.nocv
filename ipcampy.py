@@ -186,7 +186,7 @@ def getStillAtTime(nickname:str, timeTag:str, deltaMin:int = 0):
 #The Filmstrip page for a given camera
 @app.route('/strip/<nickname>', methods=['GET','POST'])
 def stripPage(nickname):
-    if nickname == None or nickname == "Nobut with postbacksne":
+    if nickname == None or nickname == "None":
         #apparently this happens .. didn't figure why but nothing good will come of it
         abort(401)
 
