@@ -157,8 +157,39 @@ def timelapsePage(nickname):
 
 ##########################################################################################
 #FILMSTRIP navigate through the pictures
+
+#Expects timeTag in format "xx:yy"
+def getStillAtTime(nickname:str, timeTag:str, deltaMin:int = 0):
+    #list of stills for that camera
+    l = stillsListForCamera(nickname)
+
+    if len(l) == 0:
+        return None, timeTag
+    
+    d = datetime.strptime(timeTag, "%H:%M")
+    d = d + timedelta(minutes=deltaMin)
+    t = d.strftime("%H%M")
+
+    for fname in l:
+        m = reStills.search(fname)
+        if not m:
+            #no match ?? Shouldn't happen
+            continue
+        if m.group("time").startswith(t):
+            #found it!
+            return fname, d.strftime("%H:%M")
+    
+    #if we're here, we asked for an image which doesn't exist
+    return None, timeTag
+            
+
+
 @app.route('/strip/<nickname>', methods=['GET','POST'])
 def stripPage(nickname):
+    if nickname == None:
+        #apparently this happens .. didn't figure why but nothing good will come of it
+        abort(401)
+
     #just to be safe (CompTIA Security+)
     print(f"Strip of '{nickname}' (secured to '{secure_filename(nickname)}') ")
     nickname = secure_filename(nickname)
@@ -173,53 +204,51 @@ def stripPage(nickname):
         #Read current time if present
         if request.form["currentTime"] != "":
             currentTime = request.form["currentTime"]
+        
+        delta = 0
 
         # Goto
         if request.form["action"] == "goto" and request.form["time"] != "" :
             flash(f"Goto time " + request.form["time"])
 
-            #list of stills for that camera
-            l = stillsListForCamera(nickname)
+            f, t = getStillAtTime(nickname=nickname, timeTag=request.form["time"])
 
-            if len(l) == 0:
-                abort(404)
-            t = request.form["time"].replace(":", "")
-            f = None
-            for fname in l:
-                m = reStills.search(fname)
-                if not m:
-                    #no match ?? Shouldn't happen
-                    continue
-                if m.group("time").startswith(t):
-                    #found it!
-                    f = fname
-                    break
             print(f"DBG Strip GOTO '{f}'")
             if f:
                 imgURL = "/stills/" + f
                 currentTime = t
+            else:
+                flash(f"Couldn't find still for {nickname} at {request.form['time']} (with delta {delta} min)", "error")
+        elif request.form["action"].startswith("minus"):
+            delta = -int(request.form["action"].replace("minus-", ""))
+            f, t = getStillAtTime(nickname=nickname, timeTag=currentTime, deltaMin=delta)
 
+            if f:
+                imgURL = "/stills/" + f
+                currentTime = t
+            else:
+                flash(f"Couldn't find still for {nickname} at {currentTime} (with delta {delta} min)", "error")
         else:
             flash("Unknown or TODO implement", "error")            
     else:
         #Get so first view
-            flash(f"Show latest still for '{nickname}'")
+        flash(f"Show latest still for '{nickname}'")
 
-            #list of stills for that camera
-            l = stillsListForCamera(nickname)
+        #list of stills for that camera
+        l = stillsListForCamera(nickname)
 
-            if len(l) > 0 :
-                imgURL = "/stills/" + l[-1]
-                m = reStills.search(l[-1])
-                if not m:
-                    flash("ERROR latest image doesn't follow expected filename pattern", "error")
-                    print(f"ERR: Strip latest filename was '{l[-1]}'")
-                else:
-                    currentTime = m.group("time")[:2] + ":" + m.group("time")[2:4]
-                    print(f"DBG: latest timetag is {currentTime} from file {l[-1]}")
-
+        if len(l) > 0 :
+            imgURL = "/stills/" + l[-1]
+            m = reStills.search(l[-1])
+            if not m:
+                flash("ERROR latest image doesn't follow expected filename pattern", "error")
+                print(f"ERR: Strip latest filename was '{l[-1]}'")
             else:
-                flash(f"No still available for camera '{nickname}'", "error")
+                currentTime = m.group("time")[:2] + ":" + m.group("time")[2:4]
+                print(f"DBG: latest timetag is {currentTime} from file {l[-1]}")
+
+        else:
+            flash(f"No still available for camera '{nickname}'", "error")
 
     return render_template("filmstrip.html", cam=cam, imgURL=imgURL, currentTime=currentTime)
 
