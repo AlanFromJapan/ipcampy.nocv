@@ -183,10 +183,10 @@ def getStillAtTime(nickname:str, timeTag:str, deltaMin:int = 0):
     return None, timeTag
             
 
-
+#The Filmstrip page for a given camera
 @app.route('/strip/<nickname>', methods=['GET','POST'])
 def stripPage(nickname):
-    if nickname == None:
+    if nickname == None or nickname == "Nobut with postbacksne":
         #apparently this happens .. didn't figure why but nothing good will come of it
         abort(401)
 
@@ -207,20 +207,30 @@ def stripPage(nickname):
         
         delta = 0
 
-        # Goto
         if request.form["action"] == "goto" and request.form["time"] != "" :
+            # GOTO TIME
             flash(f"Goto time " + request.form["time"])
 
             f, t = getStillAtTime(nickname=nickname, timeTag=request.form["time"])
 
-            print(f"DBG Strip GOTO '{f}'")
             if f:
                 imgURL = "/stills/" + f
                 currentTime = t
             else:
                 flash(f"Couldn't find still for {nickname} at {request.form['time']} (with delta {delta} min)", "error")
         elif request.form["action"].startswith("minus"):
+            #GO BACK IN TIME
             delta = -int(request.form["action"].replace("minus-", ""))
+            f, t = getStillAtTime(nickname=nickname, timeTag=currentTime, deltaMin=delta)
+
+            if f:
+                imgURL = "/stills/" + f
+                currentTime = t
+            else:
+                flash(f"Couldn't find still for {nickname} at {currentTime} (with delta {delta} min)", "error")
+        elif request.form["action"].startswith("plus"):
+            #GO FORWARD IN TIME
+            delta = int(request.form["action"].replace("plus-", ""))
             f, t = getStillAtTime(nickname=nickname, timeTag=currentTime, deltaMin=delta)
 
             if f:
