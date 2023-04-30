@@ -166,11 +166,16 @@ def stripPage(nickname):
     cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
 
     imgURL = None
+    currentTime = ""
 
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
+        #Read current time if present
+        if request.form["currentTime"] != "":
+            currentTime = request.form["currentTime"]
+
         # Goto
-        if request.form["action"] == "goto":
+        if request.form["action"] == "goto" and request.form["time"] != "" :
             flash(f"Goto time " + request.form["time"])
 
             #list of stills for that camera
@@ -189,13 +194,34 @@ def stripPage(nickname):
                     #found it!
                     f = fname
                     break
-            print(f"Strip GOTO '{f}'")
+            print(f"DBG Strip GOTO '{f}'")
             if f:
                 imgURL = "/stills/" + f
+                currentTime = t
+
         else:
-            flash("Unknow or TODO implement", "error")            
-    
-    return render_template("filmstrip.html", cam=cam, imgURL=imgURL)
+            flash("Unknown or TODO implement", "error")            
+    else:
+        #Get so first view
+            flash(f"Show latest still for '{nickname}'")
+
+            #list of stills for that camera
+            l = stillsListForCamera(nickname)
+
+            if len(l) > 0 :
+                imgURL = "/stills/" + l[-1]
+                m = reStills.search(l[-1])
+                if not m:
+                    flash("ERROR latest image doesn't follow expected filename pattern", "error")
+                    print(f"ERR: Strip latest filename was '{l[-1]}'")
+                else:
+                    currentTime = m.group("time")[:2] + ":" + m.group("time")[2:4]
+                    print(f"DBG: latest timetag is {currentTime} from file {l[-1]}")
+
+            else:
+                flash(f"No still available for camera '{nickname}'", "error")
+
+    return render_template("filmstrip.html", cam=cam, imgURL=imgURL, currentTime=currentTime)
 
 
 ##########################################################################################
