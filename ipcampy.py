@@ -11,6 +11,7 @@ import re
 from werkzeug.utils import secure_filename
 from io import BytesIO, StringIO
 from sharedObjects import IpCamera
+import PIL
 
 import camCapture
 
@@ -94,6 +95,41 @@ def captureImage(nickname):
         #return the in memory image
         return send_file(io_buf, mimetype='image/jpeg')        
 
+
+##########################################################################################
+#Callback to save an image on the disk
+@app.route('/save/<nickname>')
+def saveImage(nickname):
+
+    #not logged in? go away
+    if None == request.cookies.get('username'):
+        abort(500)  
+        return
+
+    if not nickname in [x.nickname for x in config.myconfig["cameras"]]:
+        print(f"Error: unknown camera '{nickname}'")
+        abort(500)  
+        return
+
+    cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
+
+    highRes = True
+
+    io_buf, _ = camCapture.captureStill(cam, highRes=highRes)
+
+    if io_buf == None:
+        flash(f"Error save shot of '{nickname}'")
+        return redirect("/")
+    else:
+        #put back at start (in case it wasn't already)
+        io_buf.seek(0)
+        img = PIL.Image.open(io_buf)
+        #make sure it is saved in the subfolder of current file
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        thumbnail = os.path.join(dir_path, "static", "stills", secure_filename(nickname).lower() + f"_{datetime.now():%Y%m%d_%H%M%S}.jpg")
+        img.save(thumbnail, format="jpeg", quality=90)
+        flash(f"Saved shot for '{nickname}' successful.", "success")
+        return redirect("/")
 
 
         
@@ -303,7 +339,7 @@ def doLogin():
 if __name__ == '__main__':
     print ("""
 USAGE:
-    python3 ipcampy.py [path_to_cert.pem path_to_key.perm]
+    python3 ipcampy.py [path_to_cert.pem path_to_key.pem]
 
 If you don't provide the *.pem files it will start as an HTTP app. You need to pass both .pem files to run as HTTPS.
     """)
