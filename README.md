@@ -32,19 +32,19 @@ If you choose so to activate them, the batch will do the follosing:
 
 # Setup and maintenance 
 
-## Installation
+## Installation as standalone app
 
-1. git clone https://github.com/AlanFromJapan/ipcampy.nocv.git
-1. git branch master 
-1. ./install-dependencies.sh
-1. create a config.py
+1. `git clone https://github.com/AlanFromJapan/ipcampy.nocv.git`
+1. `git branch master`
+1. `./install-dependencies.sh` to install the necessary Linux packages
+1. create a `config.py` by copying `config.sample.py`
 1. create the ssl keys in the ssl/ folder
 1. From that point it should work if you run it with your user. Now from next line is how to make it a service-like
-1. run the ./setup.sh or do the below 2 lines
-1. sudo adduser webuser  #make the user
-1. sudo passwd -l webuser #disable the login of the user but allows to su to
-1. edit the /ssl/*.pem permissions so the files belong to group webuser and that group has readonly access (otherwise can't run as ssh)
-1. now run the ./start-service.sh on startup, usually by putting it in /etc/rc.local
+1. run the ./setup.sh ***or*** do the below 2 lines
+    1. `sudo adduser webuser`  #make the user
+    1. `sudo passwd -l webuser` #disable the login of the user but allows to su to
+1. edit the ssl/*.pem permissions so the files belong to group webuser and that group has readonly access (otherwise can't run as ssh)
+1. now run the `./start-service.sh` on startup, usually by putting it in `/etc/rc.local`
 1. (optional) you might want to redirect your running port to port 443 so add this also in your /etc/rc.local : `iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port *[the port you use to run the app]*` 
 1. reboot and test...
 
@@ -61,5 +61,6 @@ WORKAROUND: just cron a restart daily using the eponym script, that's it.
 ### The stop start restart start complaining about tty and askpass?
 
 Dunno why after 3 days this error appeared ! You need to allow your user to sudo and run the stop/start/restart so edit the visudo file and add:
-
-username ALL=NOPASSWD:/home/username/Git/ipcampy.nocv/restart-service.sh, /home/username/Git/ipcampy.nocv/start-service.sh, /home/username/Git/ipcampy.nocv/stop-service.sh
+```
+username ALL=NOPASSWD:/home/*username*/Git/ipcampy.nocv/restart-service.sh, /home/*username*/Git/ipcampy.nocv/start-service.sh, /home/*username*/Git/ipcampy.nocv/stop-service.sh
+```
