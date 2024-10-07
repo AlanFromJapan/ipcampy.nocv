@@ -18,7 +18,7 @@ Documentation details are here: http://electrogeek.tokyo/ipcampy.nocv.html
 ## Installation
 
 1. git clone https://github.com/AlanFromJapan/ipcampy.nocv.git
-1. git branch master 
+1. git checkout master 
 1. ./install-dependencies.sh
 1. create a config.py
 1. create the ssl keys in the ssl/ folder
