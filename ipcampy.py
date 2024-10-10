@@ -2,18 +2,19 @@
 # https://stackoverflow.com/questions/49978705/access-ip-camera-in-python-opencv#49979186
 
 import config
-from flask import Flask, request, send_file, render_template, abort, redirect, make_response, flash, Response
+from flask import Flask, request, send_file, render_template, abort, redirect, flash, Response
 from datetime import datetime, timedelta
 import sys, os
 import time
 import re
 
 from werkzeug.utils import secure_filename
-from io import BytesIO, StringIO
-from sharedObjects import IpCamera
 import PIL
 
 import camCapture
+
+
+from bp_login.login import login_bp
 
 
 ############################ CONSTANTS #################################
@@ -37,12 +38,14 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'ico'])
 ##########################################################################################
 
 ##########################################################################################
+#Login page
+app.register_blueprint(login_bp)
+
+##########################################################################################
 #Default home page with list of cameras and low res capture
 @app.route('/')
+@app.route('/home')
 def homepage():
-    #not logged in? go away
-    if None == request.cookies.get('username'):
-        return redirect("/login")
     return render_template("main01.html", pagename="Home", cameras=config.myconfig["cameras"], conf=config.myconfig)
 
 
@@ -50,11 +53,8 @@ def homepage():
 #Zooms to ONE camera (show in high res)
 @app.route('/zoom/<nickname>')
 def zoomPage(nickname):
-    #not logged in? go away
-    if None == request.cookies.get('username'):
-        return redirect("/login")
 
-    if not nickname in [x.nickname for x in config.myconfig["cameras"]]:
+    if nickname not in [x.nickname for x in config.myconfig["cameras"]]:
         flash(f"Error: unknown camera '{nickname}'")
         return redirect("/")
 
@@ -69,12 +69,8 @@ def zoomPage(nickname):
 @app.route('/<nickname>/capture.jpg')
 def captureImage(nickname):
 
-    #not logged in? go away
-    if None == request.cookies.get('username'):
-        abort(500)  
-        return
 
-    if not nickname in [x.nickname for x in config.myconfig["cameras"]]:
+    if nickname not in [x.nickname for x in config.myconfig["cameras"]]:
         print(f"Error: unknown camera '{nickname}'")
         abort(500)  
         return
@@ -101,12 +97,8 @@ def captureImage(nickname):
 @app.route('/save/<nickname>')
 def saveImage(nickname):
 
-    #not logged in? go away
-    if None == request.cookies.get('username'):
-        abort(500)  
-        return
 
-    if not nickname in [x.nickname for x in config.myconfig["cameras"]]:
+    if nickname not in [x.nickname for x in config.myconfig["cameras"]]:
         print(f"Error: unknown camera '{nickname}'")
         abort(500)  
         return
@@ -142,7 +134,7 @@ def stillsListForCamera(nickname:str):
     path= os.path.join("static", "stills")
     l = [l for l in os.listdir(path) if 
          os.path.isfile(os.path.join(path, l)) 
-         and l.lower()[-4:] == '.jpg' 
+         and l.lower().endswith('.jpg') 
          and l.lower().startswith(nickname.lower()) 
          ]
     
@@ -245,7 +237,7 @@ def stripPage(nickname):
 
         if request.form["action"] == "goto" and request.form["time"] != "" :
             # GOTO TIME
-            flash(f"Goto time " + request.form["time"])
+            flash(f"Goto time {request.form["time"]}")
 
             f, t = getStillAtTime(nickname=nickname, timeTag=request.form["time"])
 
@@ -299,39 +291,6 @@ def stripPage(nickname):
     return render_template("filmstrip.html", cam=cam, imgURL=imgURL, currentTime=currentTime)
 
 
-##########################################################################################
-#Login page
-@app.route('/login', methods=['POST', 'GET'])
-def doLogin():
-
-    if config.myconfig["detailedLogs"]:
-        print(f"Login page shown by request of {request.remote_addr}")
-        
-    if request.method == "GET":
-        return render_template("login01.html", pagename="login", message="")
-    else:
-        vLogin = request.form["login"]
-        vPwd = request.form["pwd"]
-        
-        if vLogin == config.myconfig["app_login"] and vPwd == config.myconfig["app_password"]:
-            #Login is correct
-            if config.myconfig["detailedLogs"]:
-                print(f"Login attempt SUCCESS of {request.remote_addr} !")
-
-            resp = make_response( redirect("/") )
-            
-            resp.set_cookie ('username', vLogin, expires=datetime.now() + timedelta(days=30))
-                
-            return resp
-        else:
-            #incorrect login
-            if config.myconfig["detailedLogs"]:
-                print(f"Login attempt FAILED by {request.remote_addr} using '{vLogin}' : '{vPwd}'")
-
-            return render_template("login01.html", pagename="login", message="Login incorrect")
-
-
-
 
 ########################################################################################
 ## Main entry point
@@ -357,5 +316,7 @@ If you don't provide the *.pem files it will start as an HTTP app. You need to p
             print("INFO: start as HTTP unsecured")
             app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True)
 
-    finally:
-        pass
+    except Exception as e:
+        print(f"ERROR: {e}")
+        print("Exiting ...")
+        sys.exit(1)

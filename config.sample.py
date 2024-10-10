@@ -6,8 +6,7 @@ myconfig = {
         IpCamera ("Front-Lawn", "192.168.0.2", "554", None, None, suffixLowRes="/2", suffixHighRes="/1")        
     ],
 
-    "app_login" : "test",
-    "app_password" : "test",
+
     "app_port" : "56789",
     "secret_key" : "whatever you want!!",
 
@@ -17,5 +16,10 @@ myconfig = {
 
     "path 2 fonts": "static/fonts",
     "font label" : '8bitOperatorPlusSC-Regular.ttf',
-    "default refresh sec" : 6
+    "default refresh sec" : 6,
+
+    #Use access control or not?
+    "Access control" : True,
+    "Login" : "admin",
+    "Password" : "admin",
 }
