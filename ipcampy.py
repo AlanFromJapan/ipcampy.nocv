@@ -237,7 +237,7 @@ def stripPage(nickname):
 
         if request.form["action"] == "goto" and request.form["time"] != "" :
             # GOTO TIME
-            flash(f"Goto time {request.form["time"]}")
+            flash(f"Goto time {request.form['time']}")
 
             f, t = getStillAtTime(nickname=nickname, timeTag=request.form["time"])
 
