@@ -55,7 +55,7 @@ def check_login():
         return
 
     #if no cookie, then redirect to login
-    if 'username' not in request.cookies or request.cookies.get('username') != myconfig["Login"]:
+    if 'username' not in request.cookies or request.cookies.get('username').lower() != myconfig["Login"].lower():
         return redirect("/login")
 
 
