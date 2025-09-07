@@ -13,6 +13,9 @@ myconfig = {
     "isProd" : False,
 
     "detailedLogs" : True,
+    "logfile" : "/tmp/ipcampy.log",
+    "log level" : "INFO",  #DEBUG, INFO, WARNING, ERROR, CRITICAL
+    "log format" : '%(asctime)s - %(levelname)s - %(message)s',
 
     "path 2 fonts": "static/fonts",
     "font label" : '8bitOperatorPlusSC-Regular.ttf',

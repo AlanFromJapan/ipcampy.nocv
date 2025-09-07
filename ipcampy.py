@@ -1,6 +1,7 @@
 # Big thanks to the below link which had all the core code needed
 # https://stackoverflow.com/questions/49978705/access-ip-camera-in-python-opencv#49979186
 
+import logging
 import config
 from flask import Flask, request, send_file, render_template, abort, redirect, flash, Response
 from datetime import datetime, timedelta
@@ -13,9 +14,19 @@ import PIL
 
 import camCapture
 
-
 from bp_login.login import login_bp
 
+############################ BEFORE ANYTHING ELSE #################################
+#logging to file AND console
+logging.basicConfig(filename=config.myconfig["logfile"], level=config.myconfig.get("log level", logging.INFO), format=config.myconfig.get("log format", '%(asctime)s - %(levelname)s - %(message)s'))
+
+console = logging.StreamHandler()
+console.setLevel(config.myconfig.get("log level", logging.INFO))
+formatter = logging.Formatter(config.myconfig.get("log format", '%(asctime)s - %(levelname)s - %(message)s'))
+console.setFormatter(formatter)
+logging.getLogger().addHandler(console)
+
+logging.info("Starting app..")
 
 ############################ CONSTANTS #################################
 TIMELAPSE_IMG_PER_SEC = 3.0
@@ -71,7 +82,7 @@ def captureImage(nickname):
 
 
     if nickname not in [x.nickname for x in config.myconfig["cameras"]]:
-        print(f"Error: unknown camera '{nickname}'")
+        app.logger.error(f"Unknown camera '{nickname}'")
         abort(500)  
         return
 
@@ -99,7 +110,7 @@ def saveImage(nickname):
 
 
     if nickname not in [x.nickname for x in config.myconfig["cameras"]]:
-        print(f"Error: unknown camera '{nickname}'")
+        app.logger.error(f"Unknown camera '{nickname}'")
         abort(500)  
         return
 
@@ -219,7 +230,7 @@ def stripPage(nickname):
         abort(401)
 
     #just to be safe (CompTIA Security+)
-    print(f"Strip of '{nickname}' (secured to '{secure_filename(nickname)}') ")
+    app.logger.info(f"Strip of '{nickname}' (secured to '{secure_filename(nickname)}') ")
     nickname = secure_filename(nickname)
 
     cam = [x for x in config.myconfig["cameras"] if x.nickname == nickname][0]
@@ -280,10 +291,10 @@ def stripPage(nickname):
             m = reStills.search(l[-1])
             if not m:
                 flash("ERROR latest image doesn't follow expected filename pattern", "error")
-                print(f"ERR: Strip latest filename was '{l[-1]}'")
+                app.logger.error(f"Strip latest filename was '{l[-1]}'")
             else:
                 currentTime = m.group("time")[:2] + ":" + m.group("time")[2:4]
-                print(f"DBG: latest timetag is {currentTime} from file {l[-1]}")
+                app.logger.debug(f"Latest timetag is {currentTime} from file {l[-1]}")
 
         else:
             flash(f"No still available for camera '{nickname}'", "error")
@@ -309,14 +320,14 @@ If you don't provide the *.pem files it will start as an HTTP app. You need to p
         #run as HTTPS?
         if len(sys.argv) == 3:
             #go HTTPS
-            print("INFO: start as HTTPSSSSSSSSSSS")
+            app.logger.info("Start as HTTPS")
             app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True, ssl_context=(sys.argv[1], sys.argv[2]))
         else:
             #not secured HTTP
-            print("INFO: start as HTTP unsecured")
+            app.logger.info("Start as HTTP unsecured")
             app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True)
 
     except Exception as e:
-        print(f"ERROR: {e}")
-        print("Exiting ...")
+        app.logger.error(f"{e}")
+        app.logger.error("Exiting ...")
         sys.exit(1)

@@ -13,6 +13,8 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 
+from flask import current_app 
+
 #fonts
 font_label = ImageFont.truetype(os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), config.myconfig["path 2 fonts"]), config.myconfig["font label"]), 16)
 
@@ -46,7 +48,7 @@ def captureStill (cam: IpCamera, highRes = False):
         io_buf.seek(0)
 
         if config.myconfig["detailedLogs"]:
-            print(f"DBG: acquisition of {cam.nickname} in {(time.time() - tstart):0.2f}s" )
+            current_app.logger.info(f"DBG: acquisition of {cam.nickname} in {(time.time() - tstart):0.2f}s" )
 
         #add time
         img = Image.open(io_buf)
@@ -71,7 +73,7 @@ def captureStill (cam: IpCamera, highRes = False):
         #return the in memory image
         return io_buf, (time.time() - tstart)
     except Exception as ex:
-        print(f"ERROR getting data for {cam.nickname} : {ex}")
+        current_app.logger.error(f"ERROR getting data for {cam.nickname} : {ex}")
         traceback.print_exc(limit=5, file=sys.stdout)
 
         return None, (time.time() - tstart)
