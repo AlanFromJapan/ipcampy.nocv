@@ -64,3 +64,16 @@ Dunno why after 3 days this error appeared ! You need to allow your user to sudo
 ```
 username ALL=NOPASSWD:/home/*username*/Git/ipcampy.nocv/restart-service.sh, /home/*username*/Git/ipcampy.nocv/start-service.sh, /home/*username*/Git/ipcampy.nocv/stop-service.sh
 ```
+
+# Docker version
+
+## Build
+
+`docker build -t ipcampynocv .`
+ 
+## Register
+
+`docker run -d -p 56789:56789 --restart unless-stopped --name ipcampy-container ipcampynocv`
+
+## Connect to container
+`docker exec -it ipcampy-container bash`
