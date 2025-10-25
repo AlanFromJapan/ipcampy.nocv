@@ -57,10 +57,12 @@ def captureStill (cam: IpCamera, highRes = False):
         #if label not disabled for that cam
         if cam.overlay_label != "":
             label = cam.overlay_label.format(datetime.now(), cam.nickname, cam.ip, cam.port)
-            w,h = draw.textsize(label, font_label)
-            x,y= 1, img.height            
-            draw.rectangle((x, y, x + w, y - h), fill=(192, 192, 192, 180), outline=(255, 255, 255))
-            draw.text((x,y - h), text=label, fill=(30,30,30), font=font_label)
+            bbox = draw.textbbox((0, 0), label, font=font_label)
+            w, h = bbox[2] - bbox[0], bbox[3] #- bbox[1] don't reduce the height, you want the max
+            x,y= 1, img.height
+            yoffset = 0
+            draw.rectangle((x, y - h - yoffset, x + w, y- yoffset), fill=(192, 192, 192, 180), outline=(255, 255, 255))
+            draw.text((x,y - h - yoffset), text=label, fill=(30,30,30), font=font_label)
 
         #put back at start (needed here!)
         io_buf.seek(0)
