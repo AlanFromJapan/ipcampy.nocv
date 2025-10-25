@@ -70,7 +70,11 @@ username ALL=NOPASSWD:/home/*username*/Git/ipcampy.nocv/restart-service.sh, /hom
 ## Build
 
 `docker build -t ipcampynocv .`
- 
+
+## Temporary run (no register)
+
+`docker run -p 56789:56789 -it ipcampynocv bash`
+
 ## Register
 
 `docker run -d -p 56789:56789 --restart unless-stopped --name ipcampy-container ipcampynocv`
