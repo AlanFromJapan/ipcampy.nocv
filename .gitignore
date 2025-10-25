@@ -4,3 +4,9 @@ __pycache__/
 *.pem
 
 static/stills/*.jpg
+
+bin/
+include/
+lib/
+lib64
+pyvenv.cfg
