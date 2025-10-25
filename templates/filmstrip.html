@@ -1,0 +1,38 @@
+{% extends 'master01.html' %}
+
+{% block contents %} 
+<a href="/">[Back to cameras list]</a><br/>
+<h1>Filmstrip of latest stills from [{{ cam.nickname }}]</h1>
+
+
+<img id="stillImg" src="{{ imgURL }}" />
+<form id="theForm" method="post" >
+<!-- No session for 1 value -->
+<input type="hidden" name="currentTime" value="{{ currentTime }}" />
+
+<table>
+    <tr>
+        <td colspan="11">
+            Current viewing time tag "{{currentTime}}"
+        </td>
+    </tr>
+    <tr>
+        <td><button type="button" onClick="clickConfirm('action', 'minus-360', '');"><b>-6 h</b></button></td>
+        <td><button type="button" onClick="clickConfirm('action', 'minus-120', '');"><b>-2 h</b></button></td>
+        <td><button type="button" onClick="clickConfirm('action', 'minus-30', '');"><b>-30 min</b></button></td>
+        <td><button type="button" onClick="clickConfirm('action', 'minus-5', '');"><b>-5 min</b></button></td>
+        <td><button type="button" onClick="clickConfirm('action', 'minus-1', '');"><b>-1 min</b></button></td>
+        <td>    
+            <input type="time" id="time" name="time" /><br/>
+            <button type="button" onClick="clickConfirm('action', 'goto', '');"><b>GOTO</b> that time</button>
+        </td>
+        <td><button type="button" onClick="clickConfirm('action', 'plus-1', '');"><b>+1 min</b></button></td>
+        <td><button type="button" onClick="clickConfirm('action', 'plus-5', '');"><b>+5 min</b></button></td>
+        <td><button type="button" onClick="clickConfirm('action', 'plus-30', '');"><b>+30 min</b></button></td>
+        <td><button type="button" onClick="clickConfirm('action', 'plus-120', '');"><b>+2 h</b></button></td>
+        <td><button type="button" onClick="clickConfirm('action', 'plus-360', '');"><b>+6 h</b></button></td>
+    </tr>
+</table>
+</form>
+
+{% endblock %}

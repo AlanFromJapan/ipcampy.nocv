@@ -1,3 +1,3 @@
 flask 
 av 
-pillow
+pillow==9.0.1

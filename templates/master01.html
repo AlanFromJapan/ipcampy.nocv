@@ -4,8 +4,12 @@
     <link rel="stylesheet" href="/css/style.css" type="text/css" />
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <script type="text/javascript" src="/js/utils.js"></script>
   </head>
 <body>
+
+  <div id="divTitle">ipcampy.noCV</div>
+  <br/>
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
   <div class="flashes_container">
@@ -21,8 +25,6 @@
   {% endif %}
 {% endwith %}
 
-  <div id="divTitle">ipcampy.noCV</div>
-  <br/>
 
 {% block contents %} {% endblock %}
 
