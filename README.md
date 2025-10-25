@@ -2,7 +2,18 @@
 Simplistic web interface to show capture of IP Camera. Should work with any RTSP compatible camera.
 Uses FFmpeg (av) libs for the capture and **not** OpenCV (the trick being that getting it to work on small board computers is a pain).
 
-Documentation details are here: http://electrogeek.tokyo/ipcampy.nocv.html
+Documentation details are here: http://electrogeek.cc/ipcampy.nocv.html
+
+![Screenshot](assets/screenshot.jpg)
+
+## What it can do
+- [x] Login/password access (only one, view only anyway)
+- [x] Show multiple camera "low resolution" pictures
+- [x] Zoom on one camera (uses the "high resolution" stream)
+- [ ] Save image still on server
+- [ ] View saved images as Timelapse (pseudo movie) or Filmstrip (image per image)
+- [x] Docker version
+
 
 ## Inspiration
 
@@ -35,7 +46,6 @@ If you choose so to activate them, the batch will do the follosing:
 ## Installation as standalone app
 
 1. `git clone https://github.com/AlanFromJapan/ipcampy.nocv.git`
-1. `git branch master`
 1. `./install-dependencies.sh` to install the necessary Linux packages
 1. create a `config.py` by copying `config.sample.py`
 1. create the ssl keys in the ssl/ folder
@@ -64,6 +74,8 @@ Dunno why after 3 days this error appeared ! You need to allow your user to sudo
 ```
 username ALL=NOPASSWD:/home/*username*/Git/ipcampy.nocv/restart-service.sh, /home/*username*/Git/ipcampy.nocv/start-service.sh, /home/*username*/Git/ipcampy.nocv/stop-service.sh
 ```
+
+PS: use the Docker version, never had that bug ¯\\__(ツ)_/¯.
 
 # Docker version
 
